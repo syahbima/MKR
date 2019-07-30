@@ -1,14 +1,30 @@
+import pickle
 import tensorflow as tf
 import numpy as np
+from datetime import datetime
 from model import MKR
+from logger import Logger
+
+timestamp = str(datetime.timestamp(datetime.now()))
+
+logger = Logger()
+session_log_path = "../log/{}/".format(timestamp)
+logger.create_session_folder(session_log_path)
+logger.set_default_filename(session_log_path + "log.txt")
 
 
 def train(args, data, show_loss, show_topk):
+    logger.log(str(args))
     n_user, n_item, n_entity, n_relation = data[0], data[1], data[2], data[3]
     train_data, eval_data, test_data = data[4], data[5], data[6]
     kg = data[7]
 
+    n_item = n_item
+
     model = MKR(args, n_user, n_item, n_entity, n_relation)
+
+    print("n_user : " , n_user, "\n")
+    print("n_item : " , n_item, "\n")
 
     # top-K evaluation settings
     user_num = 100
@@ -18,10 +34,24 @@ def train(args, data, show_loss, show_topk):
     user_list = list(set(train_record.keys()) & set(test_record.keys()))
     if len(user_list) > user_num:
         user_list = np.random.choice(user_list, size=user_num, replace=False)
-    item_set = set(list(range(n_item)))
+    
+    # item_set = set(list(range(n_item)))
+    item_set = set()
+
+    for data in train_data :
+        item_set.add(int(data[1]))
+
+    for data in eval_data :
+        item_set.add(int(data[1]))
+
+    for data in test_data :
+        item_set.add(int(data[1]))
+
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        saver = tf.train.Saver(max_to_keep=None)
+
         for step in range(args.n_epochs):
             # RS training
             np.random.shuffle(train_data)
@@ -49,23 +79,33 @@ def train(args, data, show_loss, show_topk):
 
             print('epoch %d    train auc: %.4f  acc: %.4f    eval auc: %.4f  acc: %.4f    test auc: %.4f  acc: %.4f'
                   % (step, train_auc, train_acc, eval_auc, eval_acc, test_auc, test_acc))
+            logger.log('epoch %d    train auc: %.4f  acc: %.4f    eval auc: %.4f  acc: %.4f    test auc: %.4f  acc: %.4f'
+                  % (step, train_auc, train_acc, eval_auc, eval_acc, test_auc, test_acc))
 
             # top-K evaluation
             if show_topk:
                 precision, recall, f1 = topk_eval(
                     sess, model, user_list, train_record, test_record, item_set, k_list)
                 print('precision: ', end='')
+                logger.log('precision: ')
                 for i in precision:
                     print('%.4f\t' % i, end='')
+                    logger.log('%.4f\t' % i)
                 print()
                 print('recall: ', end='')
+                logger.log('recall: ')
                 for i in recall:
                     print('%.4f\t' % i, end='')
+                    logger.log('%.4f\t' % i)
                 print()
                 print('f1: ', end='')
+                logger.log('f1: ')
                 for i in f1:
                     print('%.4f\t' % i, end='')
+                    logger.log('%.4f\t' % i)
                 print('\n')
+            
+            saver.save(sess, session_log_path + "models/epoch_{}".format(step))
 
 
 def get_feed_dict_for_rs(model, data, start, end):

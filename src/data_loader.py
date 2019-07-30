@@ -14,15 +14,16 @@ def load_rating(args):
     print('reading rating file ...')
 
     # reading rating file
-    rating_file = '../data/' + args.dataset + '/ratings_final'
+    #rating_file = '../data/' + args.dataset + '/ratings_final'
+    rating_file = '../data/' + 'intersect-14m' + '/ratings_final'
     if os.path.exists(rating_file + '.npy'):
         rating_np = np.load(rating_file + '.npy')
     else:
         rating_np = np.loadtxt(rating_file + '.txt', dtype=np.int32)
         np.save(rating_file + '.npy', rating_np)
 
-    n_user = len(set(rating_np[:, 0]))
-    n_item = len(set(rating_np[:, 1]))
+    n_user = max(set(rating_np[:, 0])) + 1
+    n_item = max(set(rating_np[:, 1])) + 1
     train_data, eval_data, test_data = dataset_split(rating_np)
 
     return n_user, n_item, train_data, eval_data, test_data
@@ -52,14 +53,15 @@ def load_kg(args):
     print('reading KG file ...')
 
     # reading kg file
-    kg_file = '../data/' + args.dataset + '/kg_final'
+    #kg_file = '../data/' + args.dataset + '/kg_final'
+    kg_file = '../data/' + 'intersect-14m' + '/kg_final'
     if os.path.exists(kg_file + '.npy'):
         kg = np.load(kg_file + '.npy')
     else:
         kg = np.loadtxt(kg_file + '.txt', dtype=np.int32)
         np.save(kg_file + '.npy', kg)
 
-    n_entity = len(set(kg[:, 0]) | set(kg[:, 2]))
-    n_relation = len(set(kg[:, 1]))
+    n_entity = max(set(kg[:, 0]) | set(kg[:, 2]))+1
+    n_relation = max(set(kg[:, 1]))+1
 
     return n_entity, n_relation, kg
