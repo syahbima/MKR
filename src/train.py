@@ -6,14 +6,13 @@ from model import MKR
 from logger import Logger
 
 timestamp = str(datetime.timestamp(datetime.now()))
-
-logger = Logger()
 session_log_path = "../log/{}/".format(timestamp)
-logger.create_session_folder(session_log_path)
-logger.set_default_filename(session_log_path + "log.txt")
+
 
 
 def train(args, data, show_loss, show_topk):
+   # logger = init_logger()
+    logger = init_logger(session_log_path)
     logger.log(str(args))
     n_user, n_item, n_entity, n_relation = data[0], data[1], data[2], data[3]
     train_data, eval_data, test_data = data[4], data[5], data[6]
@@ -162,3 +161,11 @@ def get_user_record(data, is_train):
                 user_history_dict[user] = set()
             user_history_dict[user].add(item)
     return user_history_dict
+
+def init_logger(path): 
+    timestamp = str(datetime.timestamp(datetime.now()))
+    logger = Logger()
+    logger.create_session_folder(path)
+    logger.set_default_filename(path + "log.txt")
+
+    return logger
