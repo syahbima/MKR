@@ -43,7 +43,7 @@ You can download the intersect-20m dataset [here](https://github.com/Jessinra/GD
     pip3 install -r requirements.txt
 ### Preprocess the data 
 1. To create missing `kg_final.txt` & `ratings_final.txt` files:
-- use this [jupyter notebook](./data/movie/Preprocess.ipynb) (`Preprocess.ipynb` inside the `./data/movie`).
+- use this [jupyter notebook](./data/intersect-14m/Preprocess.ipynb) (`Preprocess.ipynb` inside the `./data/intersect-14m`).
 
 ### How to run
 1. Make sure `kg_final.txt` & `ratings_final.txt` exist. If not, run the preprocessing first.
